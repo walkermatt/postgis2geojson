@@ -92,7 +92,7 @@ def getData():
     else:
         query += "*, "
 
-    query += "ST_AsGeoJSON(" + arguments.geometry + ") AS geometry FROM " + arguments.table
+    query += "ST_AsGeoJSON(ST_Transform(" + arguments.geometry + ", 4326)) AS geometry FROM " + arguments.table
 
     # If a WHERE statement was provided, add that
     if arguments.where is not None:
