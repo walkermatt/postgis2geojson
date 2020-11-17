@@ -12,29 +12,29 @@ parser = argparse.ArgumentParser(
     epilog="Example usage: python postgis2geojson.py -d awesomeData -h localhost -u user -p securePassword -t table -f id name geom -w 'columnA = columnB' -o myData --topojson")
 
 parser.add_argument("-d", "--database", dest="database",
-    type=str, required=True,
+    type=str,
     help="The database to connect to")
 
 # Python doesn't let you use -h as an option for some reason
 parser.add_argument("-H", "--host", dest="host",
-    default="localhost", type=str,
-    help="Database host. Defaults to 'localhost'")
+    type=str,
+    help="Database host.")
 
 parser.add_argument("-u", "--user", dest="user",
-    default="postgres", type=str,
-    help="Database user. Defaults to 'postgres'")
+    type=str,
+    help="Database user.")
 
 parser.add_argument("-p", "--password", dest="password",
-    default="", type=str,
+   type=str,
     help="Password for the database user")
 
 parser.add_argument("-P", "--port", dest="port",
-    default="5432", type=str,
-    help="Password for the database user")
+    type=str,
+    help="Database port")
 
 parser.add_argument("-t", "--table", dest="table",
     type=str, required=True,
-    help="Database table to query")
+    help="Table or view to query")
 
 parser.add_argument("-f", "--fields", dest="fields",
     nargs="+",
@@ -71,8 +71,14 @@ def check_for_decimals(obj):
     
 def getData():
     # Connect to the database
+    conn_pairs = [('database', 'dbname'), ('user', 'user'), ('host', 'host'), ('port', 'port'), ('password', 'password')]
     try:
-        conn = psycopg2.connect("dbname=" + arguments.database + " user=" + arguments.user + " host=" + arguments.host + " port=" + arguments.port + " password="+ arguments.password)
+        conn_args = dict([(conn_name, getattr(arguments, arg_name)) for arg_name, conn_name in conn_pairs if getattr(arguments, arg_name)])
+        if (conn_args):
+            conn = psycopg2.connect(**conn_args)
+        else:
+            # No database connection arguments passed, fallback to PG_ environment variables
+            conn = psycopg2.connect("")
     except:
         print "Unable to connect to the database. Please check your options and try again."
         return
